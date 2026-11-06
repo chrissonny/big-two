@@ -61,8 +61,15 @@ button{font:inherit;color:inherit}
 .meta{display:flex;flex-direction:column;align-items:center;gap:2px}
 .avatar{width:44px;height:44px;border-radius:50%;display:grid;place-items:center;font-size:18px;font-weight:700;
   background:var(--rail);border:2px solid var(--line);transition:box-shadow .2s, border-color .2s}
-.seat.turn .avatar{border-color:var(--gold);box-shadow:0 0 0 4px rgba(227,178,76,.25), 0 0 18px rgba(227,178,76,.5);animation:pulse 1.2s ease-in-out infinite}
-@keyframes pulse{50%{box-shadow:0 0 0 7px rgba(227,178,76,.12), 0 0 22px rgba(227,178,76,.35)}}
+.seat.turn .avatar{border-color:var(--gold)}
+.av{position:relative;width:54px;height:54px;display:grid;place-items:center}
+.ring{position:absolute;inset:0;border-radius:50%;display:none;
+  background:conic-gradient(var(--gold) calc(var(--p,1)*360deg), rgba(255,255,255,.08) 0);
+  -webkit-mask:radial-gradient(circle, transparent 24px, #000 25px);mask:radial-gradient(circle, transparent 24px, #000 25px)}
+.seat.turn .ring{display:block}
+.pts{font-size:11px;color:var(--muted);font-variant-numeric:tabular-nums}
+.cnt.last{animation:blink 1s steps(2) infinite}
+@keyframes blink{50%{opacity:.35}}
 .nm{font-size:13px;font-weight:600}
 .cnt{display:flex;align-items:center;gap:5px;font-variant-numeric:tabular-nums;font-size:13px;color:var(--muted)}
 .back{width:16px;height:22px;border-radius:3px;border:1.5px solid var(--ivory);
@@ -100,9 +107,20 @@ button{font:inherit;color:inherit}
 
 /* you */
 .me{display:flex;flex-direction:column;gap:6px}
-.status{font-size:14px;min-height:20px;text-align:center;color:var(--muted)}
+.status{font-size:14px;min-height:22px;color:var(--muted);display:flex;align-items:center;justify-content:center;gap:8px;text-align:center}
 .status.go{color:var(--gold);font-weight:600}
-.hand{position:relative;height:calc(var(--cw)*1.4 + 22px)}
+.timer{min-width:30px;height:22px;padding:0 7px;border-radius:11px;background:var(--gold);color:var(--gold-ink);
+  font-weight:700;font-size:13px;display:inline-grid;place-items:center;font-variant-numeric:tabular-nums}
+.timer.low{background:var(--red);color:var(--ivory)}
+.combos{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:6px}
+.chip{appearance:none;height:34px;border-radius:17px;border:1px solid var(--line);background:var(--rail);
+  font-size:13px;font-weight:600;cursor:pointer;padding:0;white-space:nowrap}
+.chip:active{transform:scale(.95)}
+.chip:disabled{opacity:.3;pointer-events:none}
+.chip:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+.chip.on{border-color:var(--gold);color:var(--gold)}
+.btn.hot{border-color:var(--gold);color:var(--gold)}
+.hand{position:relative;height:calc(var(--cw)*1.4 + 22px);touch-action:none}
 .actions{display:grid;grid-template-columns:1fr 1fr 1fr 1.4fr;gap:8px}
 
 /* overlays */
@@ -150,7 +168,15 @@ button{font:inherit;color:inherit}
   </main>
 
   <section class="me">
-    <div class="status" id="status"></div>
+    <div class="status" id="statusRow"><span class="timer" id="timer" hidden>20</span><span id="status"></span></div>
+    <div class="combos" id="combos">
+      <button class="chip" data-t="一對">一對</button>
+      <button class="chip" data-t="順子">順子</button>
+      <button class="chip" data-t="葫蘆">葫蘆</button>
+      <button class="chip" data-t="鐵支">鐵支</button>
+      <button class="chip" data-t="同花順">同花順</button>
+      <button class="chip" id="clearBtn">重選</button>
+    </div>
     <div class="hand" id="hand"></div>
     <div class="actions">
       <button class="btn" id="sortBtn">排序</button>
@@ -176,7 +202,7 @@ button{font:inherit;color:inherit}
       <li>計分：輸家剩幾張就是基本分，以下各項累乘：剩 10 張以上 ×2；老二未出每張 ×2（1 張 ×2、2 張 ×4…）；鐵支未出 ×2；同花順未出 ×2（同一張牌不重複算）。</li>
       <li>贏家用老二收尾（單張 2、一對 2、23456、2 的葫蘆）、鐵支收尾、同花順收尾或一條龍，每位輸家再 ×2。</li>
     </ul>
-    <p style="color:var(--muted)">操作：點牌選取，再按「出牌」。「提示」會依序建議可以出的組合。</p>
+    <p style="color:var(--muted)">操作：點牌或用手指滑過多張牌來選取，再按「出牌」。上方的牌型按鈕（一對、順子、葫蘆、鐵支、同花順）會挑出可以出的組合，重複按會由小到大換下一組。「提示」會建議最適合出的牌。每回合 20 秒，時間到會自動代打：跟單張時出最小能出的單張，其他牌型自動過。</p>
     <div class="row">
       <button class="btn" id="resetBtn">總分歸零</button>
       <button class="btn" id="redealBtn">重新發牌</button>
@@ -202,7 +228,7 @@ const SUITS=['♣','♦','♥','♠'].map(s=>s+'︎');
 const rank=c=>c>>2, suit=c=>c&3;
 const label=c=>SUITS[suit(c)]+RANKS[rank(c)];
 
-let S=null, gid=0, sel=new Set(), sortMode='rank', hintList=null, hintIdx=0, toastT=0;
+let S=null, gid=0, sel=new Set(), sortMode='rank', hintList=null, hintIdx=0, chipIdx={}, toastT=0;
 let scores=[0,0,0,0];
 try{const v=JSON.parse(localStorage.getItem('bigtwo-scores')); if(Array.isArray(v)&&v.length===4) scores=v.map(Number);}catch(e){}
 function saveScores(){try{localStorage.setItem('bigtwo-scores',JSON.stringify(scores));}catch(e){}}
@@ -212,7 +238,7 @@ function analyze(cs){
   const n=cs.length; if(!n) return null;
   const a=[...cs].sort((x,y)=>x-y);
   if(n===1) return {name:'單張',size:1,power:a[0]};
-  if(n===2) return rank(a[0])===rank(a[1])?{name:'對子',size:2,power:a[1]}:null;
+  if(n===2) return rank(a[0])===rank(a[1])?{name:'一對',size:2,power:a[1]}:null;
   if(n===13){
     if(new Set(a.map(rank)).size!==13) return null;
     const fl=a.every(c=>suit(c)===suit(a[0]));
@@ -323,15 +349,38 @@ function newRound(){
   for(let i=d.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[d[i],d[j]]=[d[j],d[i]];}
   S={gid:++gid,hands:[0,1,2,3].map(i=>d.slice(i*13,i*13+13)),lead:null,prev:null,first:true,over:false,passed:[false,false,false,false]};
   S.turn=S.hands.findIndex(h=>h.includes(0));
-  sel.clear(); hintList=null;
+  sel.clear(); hintList=null; hintIdx=0; chipIdx={};
   $('#result').hidden=true;
   render(); schedule();
 }
+const TURN_MS=20000;
 function schedule(){
-  if(S.over||S.turn===0) return;
-  const g=S.gid;
-  setTimeout(()=>{ if(S.gid!==g||S.over||S.turn===0) return; const mv=chooseMove(S.turn); mv?doPlay(S.turn,mv):doPass(S.turn); },650+Math.random()*400);
+  if(S.over) return;
+  S.turnStart=Date.now();
+  if(S.turn===0){S.turnLen=TURN_MS;return;}
+  const g=S.gid, delay=700+Math.random()*500; S.turnLen=delay;
+  setTimeout(()=>{ if(S.gid!==g||S.over||S.turn===0) return; const mv=chooseMove(S.turn); mv?doPlay(S.turn,mv):doPass(S.turn); },delay);
 }
+/* 逾時自動代打：單張出最小能出的單張，其他牌型自動過 */
+function autoMove(){
+  if(S.over||S.turn!==0) return;
+  const singles=myOpts().filter(o=>o.cards.length===1).sort((a,b)=>a.combo.power-b.combo.power);
+  sel.clear();
+  if((!S.lead||S.lead.combo.size===1)&&singles.length){toast('時間到，自動出牌'); doPlay(0,singles[0].cards); return;}
+  if(S.lead){toast('時間到，自動過'); doPass(0);}
+}
+setInterval(()=>{
+  if(!S||S.over||!S.turnLen) return;
+  if(!$('#menu').hidden){S.turnStart+=200;return;}
+  const left=S.turnStart+S.turnLen-Date.now(), p=Math.max(0,Math.min(1,left/S.turnLen));
+  document.querySelectorAll('.seat.turn .ring').forEach(r=>r.style.setProperty('--p',p));
+  const t=$('#timer');
+  if(S.turn===0){
+    const s=Math.ceil(Math.max(0,left)/1000);
+    t.hidden=false; t.textContent=s; t.classList.toggle('low',s<=5);
+    if(left<=0) autoMove();
+  }else t.hidden=true;
+},200);
 function doPlay(p,cards){
   S.hands[p]=S.hands[p].filter(c=>!cards.includes(c));
   S.lead={cards:[...cards].sort((a,b)=>a-b),combo:analyze(cards),player:p};
@@ -347,7 +396,8 @@ function advance(p){
   }else S.turn=nextActive(p);
   afterMove();
 }
-function afterMove(){ hintList=null; hintIdx=0; render(); schedule(); }
+function afterMove(){ hintList=null; hintIdx=0; chipIdx={}; render(); schedule(); }
+function myOpts(){ if(!hintList) hintList=(S.turn===0&&!S.over)?candidates(0):[]; return hintList; }
 function endRound(w){
   S.over=true; S.winner=w;
   const pts=[0,0,0,0], notes=['','','',''], wd=winDetail(S.lead);
@@ -395,10 +445,19 @@ $('#playBtn').onclick=()=>{
 $('#passBtn').onclick=()=>{ if(S.turn!==0||S.over||!S.lead) return; sel.clear(); doPass(0); };
 $('#hintBtn').onclick=()=>{
   if(S.turn!==0||S.over) return;
-  if(!hintList) {hintList=candidates(0); hintIdx=0;}
-  if(!hintList.length){toast('沒有壓得過的牌，只能過');return;}
-  sel=new Set(hintList[hintIdx%hintList.length].cards); hintIdx++; render();
+  const L=myOpts();
+  if(!L.length){toast('沒有壓得過的牌，只能過');return;}
+  sel=new Set(L[hintIdx%L.length].cards); hintIdx++; render();
 };
+/* 牌型快選：重複點擊依大小順序換下一組 */
+document.querySelectorAll('#combos [data-t]').forEach(b=>b.onclick=()=>{
+  if(S.turn!==0||S.over) return;
+  const t=b.dataset.t, L=myOpts().filter(o=>o.combo.name===t).sort((x,y)=>x.combo.power-y.combo.power);
+  if(!L.length){toast('沒有可以出的'+t);return;}
+  const i=chipIdx[t]||0; chipIdx[t]=i+1;
+  sel=new Set(L[i%L.length].cards); render();
+});
+$('#clearBtn').onclick=()=>{sel.clear(); render();};
 $('#sortBtn').onclick=()=>{ sortMode=sortMode==='rank'?'suit':'rank'; toast(sortMode==='rank'?'依點數排序':'依花色排序'); render(); };
 $('#menuBtn').onclick=()=>{$('#menu').hidden=false;};
 $('#closeMenu').onclick=()=>{$('#menu').hidden=true;};
@@ -425,8 +484,9 @@ function setCW(){
 function renderSeat(p){
   const el=$('#seat'+p), n=S.hands[p].length;
   el.classList.toggle('turn',!S.over&&S.turn===p);
-  el.innerHTML='<div class="avatar">'+NAMES[p].slice(-1)+'</div><div class="meta"><div class="nm">'+NAMES[p]+'</div>'+
-    '<div class="cnt'+(n<=2?' alert':'')+'"><span class="back"></span>'+(n===1?'Last':n===2?'剩 2':n)+'</div></div>'+
+  el.innerHTML='<div class="av"><div class="ring"></div><div class="avatar">'+NAMES[p].slice(-1)+'</div></div>'+
+    '<div class="meta"><div class="nm">'+NAMES[p]+'</div><div class="pts">'+(scores[p]>0?'+':'')+scores[p]+' 分</div>'+
+    '<div class="cnt'+(n<=2?' alert':'')+(n===1?' last':'')+'"><span class="back"></span>'+(n===1?'Last':n===2?'剩 2':n)+'</div></div>'+
     (S.passed[p]&&S.lead?'<div class="bubble">過</div>':'');
 }
 function render(){
@@ -454,25 +514,54 @@ function render(){
     if(sel.has(c)) d.classList.add('sel');
   });
 
-  // status + buttons
+  renderControls();
+}
+function renderControls(){
   const st=$('#status'), mine=!S.over&&S.turn===0, v=validate([...sel]);
-  st.classList.toggle('go',mine);
+  $('#statusRow').classList.toggle('go',mine);
+  if(!mine) $('#timer').hidden=true;
+  const opts=mine?myOpts():[], stuck=mine&&!!S.lead&&!opts.length;
   if(S.over) st.textContent=S.winner===0?'你出完了！':'本局結束';
   else if(!mine) st.textContent=NAMES[S.turn]+' 思考中…'+(S.passed[0]&&S.lead?'（你這輪已過）':'');
   else{
     let m=S.first?'你先出，必須包含 ♣3':S.lead?'壓過'+NAMES[S.lead.player]+'的'+S.lead.combo.name+'，或按「過」':'輪到你，自由出牌';
     if(topBig(0)) m='頂大！'+m;
+    if(stuck) m='沒有壓得過的牌，請按「過」';
     if(v.ok) m+=' · 已選 '+v.combo.name;
     st.textContent=m;
   }
   $('#playBtn').disabled=!mine||!v.ok;
   $('#passBtn').disabled=!mine||!S.lead;
+  $('#passBtn').classList.toggle('hot',stuck);
   $('#hintBtn').disabled=!mine;
+  document.querySelectorAll('#combos [data-t]').forEach(b=>{
+    const has=opts.some(o=>o.combo.name===b.dataset.t);
+    b.disabled=!has;
+    b.classList.toggle('on',v.ok&&v.combo.name===b.dataset.t);
+  });
+  $('#clearBtn').disabled=!sel.size;
 }
-$('#hand').addEventListener('click',e=>{
+/* 點選或滑過手牌來選牌 */
+const handEl=$('#hand'); let drag=null;
+function setSel(c,on){
+  on?sel.add(c):sel.delete(c);
+  const el=handEl.querySelector('[data-c="'+c+'"]'); if(el) el.classList.toggle('sel',on);
+  renderControls();
+}
+handEl.addEventListener('pointerdown',e=>{
   const d=e.target.closest('.card'); if(!d||S.over) return;
-  const c=+d.dataset.c; sel.has(c)?sel.delete(c):sel.add(c); render();
+  const c=+d.dataset.c; drag={on:!sel.has(c),seen:new Set([c])};
+  setSel(c,drag.on);
+  try{handEl.setPointerCapture(e.pointerId);}catch(_){}
 });
+handEl.addEventListener('pointermove',e=>{
+  if(!drag) return;
+  const t=document.elementFromPoint(e.clientX,e.clientY), d=t&&t.closest?t.closest('#hand .card'):null;
+  if(!d) return;
+  const c=+d.dataset.c; if(drag.seen.has(c)) return;
+  drag.seen.add(c); setSel(c,drag.on);
+});
+['pointerup','pointercancel'].forEach(ev=>handEl.addEventListener(ev,()=>{drag=null;}));
 window.addEventListener('resize',()=>S&&render());
 
 newRound();
