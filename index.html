@@ -142,8 +142,78 @@ button{font:inherit;color:inherit}
 .plus{color:var(--gold);font-weight:700}
 .rk{font-family:var(--display)}
 
+/* ===== FX layer: special play animations ===== */
+#fx{position:fixed;inset:0;z-index:15;pointer-events:none;overflow:hidden}
+.dmg{animation:dmg .45s ease-in-out 2}
+@keyframes dmg{20%{transform:translateX(-7px) rotate(-3deg)}60%{transform:translateX(7px) rotate(3deg)}}
+.banner{position:absolute;left:50%;top:34%;transform:translate(-50%,-50%) scale(.4);opacity:0;
+  font-family:var(--display);font-weight:700;font-size:clamp(38px,10vw,68px);letter-spacing:.08em;white-space:nowrap;
+  color:#ffe9a8;text-shadow:0 0 14px rgba(255,190,60,.9),0 0 44px rgba(255,120,20,.7),0 3px 6px rgba(0,0,0,.6);
+  animation:bannerIn 2.3s cubic-bezier(.2,.8,.3,1) forwards}
+@keyframes bannerIn{
+  0%{opacity:0;transform:translate(-50%,-50%) scale(.3)}
+  14%{opacity:1;transform:translate(-50%,-50%) scale(1.22)}
+  24%{transform:translate(-50%,-50%) scale(1)}
+  80%{opacity:1}
+  100%{opacity:0;transform:translate(-50%,-62%) scale(1.05)}}
+
+/* dragon: a segmented serpent dashes across the table and swallows the target seat */
+.dgn{position:absolute;left:0;top:0;display:flex;align-items:center;will-change:transform}
+.dgn i{display:block;width:46px;height:26px;border-radius:13px;margin-left:-16px;
+  background:linear-gradient(180deg,#5ee0a0,#0c7a4d);box-shadow:0 0 12px rgba(80,255,160,.7),inset 0 -4px 6px rgba(0,60,30,.5)}
+.dgn i:first-child{margin-left:0}
+.dgn .head{width:66px;height:44px;border-radius:24px;position:relative;z-index:2;background:linear-gradient(180deg,#7cf0b4,#0e8a56)}
+.dgn .head::before,.dgn .head::after{content:'';position:absolute;top:7px;width:9px;height:9px;border-radius:50%;background:#fff}
+.dgn .head::before{left:12px}.dgn .head::after{right:12px}
+.dgn .maw{position:absolute;left:50%;bottom:-2px;transform:translateX(-50%);width:40px;height:22px;border-radius:0 0 20px 20px;background:#3b0d0d;box-shadow:inset 0 4px 8px #ff5a4a}
+.dgn.lunge i:not(.head){opacity:.15;transition:opacity .2s}
+
+/* flush snow: suit glyphs of the lead suit raining down and burying the target */
+.flk{position:absolute;top:-6%;font-size:30px;line-height:1;animation:fall linear forwards;filter:drop-shadow(0 0 4px rgba(255,255,255,.7))}
+@keyframes fall{to{transform:translateY(118vh) rotate(540deg)}}
+
+/* bomb: four steel swords slam onto the target while flames erupt from the ground */
+.swd{position:absolute;width:13px;height:120px;border-radius:6px;transform-origin:center;
+  background:linear-gradient(180deg,#eef4f6 0 58%,#cfd9dd 58% 66%,#caa64a 66% 74%,#7a5b16 74% 100%);
+  box-shadow:0 0 14px rgba(200,230,255,.8);animation:slam .9s cubic-bezier(.3,.05,.2,1) forwards}
+.swd::after{content:'';position:absolute;left:50%;top:-26px;transform:translateX(-50%);width:0;height:0;
+  border-left:9px solid transparent;border-right:9px solid transparent;border-bottom:30px solid #dfeef4}
+@keyframes slam{
+  0%{opacity:0;transform:var(--sw) translateY(-150vh)}
+  30%{opacity:1;transform:var(--sw) translateY(0)}
+  38%{transform:var(--sw) translateY(10px)}
+  46%{transform:var(--sw) translateY(0)}
+  92%{opacity:1;transform:var(--sw) translateY(0)}
+  100%{opacity:0;transform:var(--sw) translateY(-30px)}}
+.flm{position:absolute;bottom:0;width:54px;border-radius:50% 50% 20% 20%;transform-origin:bottom center;
+  background:radial-gradient(ellipse at 50% 100%,#fff3a0 0 18%,#ff9d2e 35%,#f4511e 60%,rgba(200,40,10,.35) 80%,transparent);
+  filter:blur(1px);animation:flick linear forwards}
+@keyframes flick{
+  0%{opacity:0;transform:scaleY(.05)}
+  18%{opacity:1;transform:scaleY(1.25) translateY(-6px)}
+  45%{transform:scaleY(.85) skewX(4deg)}
+  70%{transform:scaleY(1.1) skewX(-5deg);opacity:.9}
+  100%{opacity:0;transform:scaleY(.3)}}
+
+/* deuce (大老二): golden thunderbolt strikes the target, with crown burst */
+.bolt{position:absolute;width:26px;background:linear-gradient(180deg,#fffbe6,#ffd54a 40%,#ff9800);
+  clip-path:polygon(38% 0,72% 0,55% 36%,82% 36%,30% 100%,46% 58%,14% 58%);
+  filter:drop-shadow(0 0 16px rgba(255,210,80,.95));animation:strike .7s ease-in forwards}
+@keyframes strike{0%{opacity:0;transform:translateY(-110vh) scaleY(1.6)}35%{opacity:1;transform:translateY(0) scaleY(1)}
+  45%{transform:translateY(0) scaleY(1.04)}70%{opacity:1}100%{opacity:0}}
+.flashfx{position:absolute;inset:0;background:radial-gradient(circle at var(--fx,50%) var(--fy,40%),rgba(255,240,180,.85),transparent 34%);animation:flash .6s ease-out forwards}
+@keyframes flash{0%{opacity:0}12%{opacity:1}100%{opacity:0}}
+.crwn{position:absolute;font-size:46px;animation:crownUp 1.1s ease-out forwards;filter:drop-shadow(0 0 10px rgba(255,200,60,.9))}
+@keyframes crownUp{0%{opacity:0;transform:translateY(30px) scale(.4)}30%{opacity:1;transform:translateY(-8px) scale(1.15)}100%{opacity:0;transform:translateY(-70px) scale(1)}}
+
+/* audio toggles */
+.tgl{appearance:none;border:1px solid var(--line);background:var(--rail);color:var(--ivory);border-radius:9px;
+  width:38px;height:36px;font-size:16px;cursor:pointer;padding:0}
+.tgl.off{opacity:.45}
+
 @media (prefers-reduced-motion:reduce){
   .card,.pile-cards .card,.seat.turn .avatar{animation:none;transition:none}
+  .banner{animation-duration:.01s}
 }
 </style>
 </head>
@@ -153,6 +223,8 @@ button{font:inherit;color:inherit}
   <header class="bar">
     <div class="brand">大老二 <small>Big Two</small></div>
     <div class="score">總分<b id="myScore">0</b></div>
+    <button class="tgl" id="bgmBtn" title="背景音樂">🎵</button>
+    <button class="tgl" id="sfxBtn" title="音效">🔊</button>
     <button class="btn small" id="menuBtn">選單</button>
   </header>
 
@@ -166,6 +238,8 @@ button{font:inherit;color:inherit}
     <div class="seat east" id="seat1"></div>
     <div class="toast" id="toast" hidden></div>
   </main>
+
+  <div id="fx"></div>
 
   <section class="me">
     <div class="status" id="statusRow"><span class="timer" id="timer" hidden>20</span><span id="status"></span></div>
@@ -195,12 +269,13 @@ button{font:inherit;color:inherit}
       <li>點數大小：3 &lt; 4 &lt; … &lt; K &lt; A &lt; <b>2</b>；花色大小：♣ &lt; ♦ &lt; ♥ &lt; ♠。點數相同時比花色。</li>
       <li>牌型由小到大：單張、一對、順子、葫蘆、鐵支、同花順、一條龍。沒有三條和同花。</li>
       <li>順子由小到大：A2345 &lt; 34567 &lt; … &lt; 10JQKA &lt; <b>23456</b>；JQKA2 不算順子。五張全同花色就是同花順。</li>
-      <li>鐵支是四張同點數加任一張單牌。鐵支、同花順可以壓單張、一對和比它小的五張牌型。</li>
-      <li>一條龍是 3 到 2 共 13 張，可壓所有牌型，同花一條龍 &gt; 雜花一條龍。</li>
+      <li><b>鐵支、同花順、一條龍是三大牌，可以壓任何牌型</b>（鐵支&lt;同花順&lt;一條龍，三大牌互相比大小）；其餘牌型只能在同種牌型裡面比大小。</li>
+      <li>鐵支是四張同點數加任一張單牌。一條龍是 3 到 2 共 13 張；兩條一條龍相碰時，全同花色者較大。</li>
       <li><b>過了就不能再出</b>，要等這一輪結束。其他人都過之後，最後出牌的人重新自由出牌。</li>
       <li><b>頂大</b>：下家只剩一張時，出單張必須出你手上最大的那張。如果你這輪已經過了，限制往前移到還能出牌的人。</li>
       <li>計分：輸家剩幾張就是基本分，以下各項累乘：剩 10 張以上 ×2；老二未出每張 ×2（1 張 ×2、2 張 ×4…）；鐵支未出 ×2；同花順未出 ×2（同一張牌不重複算）。</li>
       <li>贏家用老二收尾（單張 2、一對 2、23456、2 的葫蘆）、鐵支收尾、同花順收尾或一條龍，每位輸家再 ×2。</li>
+      <li>🎵 音樂：第一次點擊畫面後會開始播放背景音樂；點右上角 🎵 開關背景音樂、🔊 開關音效。打出<b>鐵支、同花順、一條龍、含老二的牌</b>時會有特殊動畫和音效。</li>
     </ul>
     <p style="color:var(--muted)">操作：點牌或用手指滑過多張牌來選取，再按「出牌」。上方的牌型按鈕（一對、順子、葫蘆、鐵支、同花順）會挑出可以出的組合，重複按會由小到大換下一組。「提示」會建議最適合出的牌。每回合 20 秒，時間到會自動代打：跟單張時出最小能出的單張，其他牌型自動過。</p>
     <div class="row">
@@ -221,7 +296,208 @@ button{font:inherit;color:inherit}
 
 <script>
 (function(){
+"use strict";
 const $=s=>document.querySelector(s);
+
+/* ---------- audio: WebAudio-synthesized BGM + SFX (no external files) ---------- */
+let AC=null, masterG=null, bgmBus=null, sfxBus=null;
+let bgmOn=true, sfxOn=true, bgmTimer=0, bgmStep=0;
+try{bgmOn=localStorage.getItem('bigtwo-bgm')!=='0'; sfxOn=localStorage.getItem('bigtwo-sfx')!=='0';}catch(e){}
+function audio(){
+  if(AC) return AC;
+  const C=window.AudioContext||window.webkitAudioContext; if(!C) return null;
+  try{AC=new C();}catch(e){return null;}
+  masterG=AC.createGain(); masterG.gain.value=.9; masterG.connect(AC.destination);
+  const comp=AC.createDynamicsCompressor(); comp.connect(masterG);
+  bgmBus=AC.createGain(); bgmBus.gain.value=bgmOn?.26:0; bgmBus.connect(comp);
+  sfxBus=AC.createGain(); sfxBus.gain.value=sfxOn?1:0; sfxBus.connect(comp);
+  return AC;
+}
+function resumeAudio(){ const a=audio(); if(a&&a.state==='suspended') a.resume().catch(()=>{}); }
+['pointerdown','keydown'].forEach(ev=>window.addEventListener(ev,resumeAudio));
+function tone(f,dur,o){
+  o=o||{}; const a=AC; if(!a) return;
+  const t0=a.currentTime+(o.when||0);
+  const osc=a.createOscillator(); osc.type=o.type||'sine'; osc.frequency.value=f;
+  if(o.slideTo) osc.frequency.exponentialRampToValueAtTime(Math.max(20,o.slideTo),t0+dur);
+  const g=a.createGain(), vol=o.vol==null?.3:o.vol;
+  g.gain.setValueAtTime(0,t0);
+  g.gain.linearRampToValueAtTime(vol,t0+(o.attack||.01));
+  if(o.sustain) g.gain.setValueAtTime(vol,t0+dur*.6);
+  g.gain.exponentialRampToValueAtTime(.0001,t0+dur);
+  osc.connect(g);
+  if(o.pan!=null&&a.createStereoPanner){const p=a.createStereoPanner();p.pan.value=o.pan;g.connect(p);p.connect(o.dest||sfxBus);}
+  else g.connect(o.dest||sfxBus);
+  osc.start(t0); osc.stop(t0+dur+.05);
+}
+function noise(dur,o){
+  o=o||{}; const a=AC; if(!a) return;
+  const t0=a.currentTime+(o.when||0), n=Math.floor(a.sampleRate*dur);
+  const buf=a.createBuffer(1,n,a.sampleRate), ch=buf.getChannelData(0);
+  for(let i=0;i<n;i++) ch[i]=(Math.random()*2-1)*(1-i/n);
+  const src=a.createBufferSource(); src.buffer=buf;
+  const f=a.createBiquadFilter(); f.type=o.hp?'highpass':'lowpass'; f.frequency.value=o.freq||900;
+  const g=a.createGain(); g.gain.value=o.vol==null?.4:o.vol;
+  src.connect(f); f.connect(g);
+  if(o.pan!=null&&a.createStereoPanner){const p=a.createStereoPanner();p.pan.value=o.pan;g.connect(p);p.connect(o.dest||sfxBus);}
+  else g.connect(o.dest||sfxBus);
+  src.start(t0);
+}
+/* SFX */
+function sDeal(){ if(!AC||!sfxOn) return; for(let i=0;i<13;i++) noise(.05,{when:i*.05,freq:2400,hp:true,vol:.12,pan:-.6+i/12*1.2}); }
+function sPlay(){ if(!AC||!sfxOn) return; tone(300,.07,{type:'triangle',vol:.22,slideTo:180}); noise(.05,{freq:3000,hp:true,vol:.14}); }
+function sPass(){ if(!AC||!sfxOn) return; tone(220,.12,{type:'sine',vol:.15,slideTo:160}); }
+function sWin(){ if(!AC||!sfxOn) return; [523,659,784,1047].forEach((f,i)=>tone(f,.5,{type:'triangle',vol:.25,when:i*.12,sustain:true})); tone(1568,.8,{type:'sine',vol:.15,when:.5}); }
+function sLose(){ if(!AC||!sfxOn) return; [392,330,262,196].forEach((f,i)=>tone(f,.4,{type:'sawtooth',vol:.12,when:i*.16})); }
+const SFX={
+  dragon(){ if(!AC||!sfxOn) return;
+    tone(90,1.1,{type:'sawtooth',vol:.3,slideTo:420});            // rising charge
+    noise(.5,{when:.85,freq:500,vol:.6});                          // chomp rumble
+    tone(140,.35,{when:.9,type:'square',vol:.3,slideTo:60});       // bite
+    [2200,1800,1400].forEach((f,i)=>noise(.06,{when:1.0+i*.07,freq:f,hp:true,vol:.2})); },
+  flush(){ if(!AC||!sfxOn) return;                                 // icy shimmer
+    [2093,2637,3136,4187,5275].forEach((f,i)=>tone(f,.9,{when:i*.09,type:'sine',vol:.1}));
+    noise(1.2,{freq:6000,hp:true,vol:.08}); },
+  bomb(){ if(!AC||!sfxOn) return;                                  // sword whoosh + BOOM + fire crackle
+    [0,.07,.14,.21].forEach((w,i)=>tone(1600,.18,{when:w,type:'sawtooth',vol:.14,slideTo:300,pan:[-.5,-.2,.2,.5][i]}));
+    tone(60,.7,{when:.34,type:'sine',vol:.7,slideTo:30});
+    noise(.6,{when:.3,freq:220,vol:.7});
+    for(let i=0;i<8;i++) noise(.05,{when:.45+i*.06,freq:1500+Math.random()*2500,hp:true,vol:.1}); },
+  deuce(){ if(!AC||!sfxOn) return;                                 // thunder + CRACK + royal fanfare
+    tone(38,.9,{type:'sine',vol:.6,slideTo:25});
+    noise(.35,{freq:400,vol:.5,when:.1});
+    noise(.12,{when:.28,freq:7000,hp:true,vol:.6});
+    tone(1200,.2,{when:.3,type:'square',vol:.25,slideTo:2400});
+    [523,659,784,1047].forEach((f,i)=>tone(f,.4,{when:.4+i*.1,type:'triangle',vol:.2,sustain:true})); },
+  bigWin(){ if(!AC||!sfxOn) return; [523,659,784,1047,1319].forEach((f,i)=>tone(f,.5,{when:i*.1,type:'triangle',vol:.25,sustain:true})); },
+  crush(){ if(!AC||!sfxOn) return; noise(.25,{freq:300,vol:.4}); tone(80,.3,{type:'square',vol:.25,slideTo:40,when:.05}); }
+};
+/* BGM: laid-back lounge loop (walking bass + pentatonic comping + hats) */
+const BPM=96, BEAT=60/BPM;
+const CHORDS=[[131,165,196,247],[110,139,165,220],[87,131,165,196],[98,123,147,196]];   // C Am F G (one bar each)
+const SCALE=[523,587,659,784,880,1047,1175];                                            // C pentatonic for fills
+function bgmNote(f,dur,o){ tone(f,dur,Object.assign({dest:bgmBus,attack:.03},o)); }
+function bgmTick(){
+  if(!AC||!bgmOn) return;
+  const bar=Math.floor(bgmStep/4)%4, beat=bgmStep%4, ch=CHORDS[bar], t=0;
+  // bass on beats 1 & 3 (root, fifth)
+  if(beat===0||beat===2) bgmNote(ch[0]/2,.5,{type:'triangle',vol:.5});
+  // comping chord off-beat
+  if(beat===1||beat===3) ch.slice(1).forEach(f=>bgmNote(f,.22,{type:'triangle',vol:.09}));
+  // hi-hat tick
+  noise(.03,{freq:8000,hp:true,vol:.05,when:0,dest:bgmBus});
+  // sparse melody fill on beat 4
+  if(beat===3&&Math.random()<.6){
+    const f=SCALE[Math.floor(Math.random()*SCALE.length)];
+    bgmNote(f,.35,{type:'sine',vol:.12,slideTo:f*.999});
+  }
+  bgmStep++;
+}
+function startBGM(){
+  const a=audio(); if(!a||!bgmOn) return; resumeAudio();
+  if(bgmBus) bgmBus.gain.setTargetAtTime(.26,a.currentTime,.4);
+  if(!bgmTimer){ bgmStep=0; bgmTick(); bgmTimer=setInterval(bgmTick,BEAT*1000); }
+}
+function stopBGM(){
+  if(bgmTimer){clearInterval(bgmTimer);bgmTimer=0;}
+  if(bgmBus&&AC) bgmBus.gain.setTargetAtTime(0,AC.currentTime,.2);
+}
+/* ---------- FX: special play animations ---------- */
+const fxLayer=$('#fx');
+function seatCenter(p){ const r=$('#seat'+p).getBoundingClientRect(); return {x:r.left+r.width/2,y:r.top+r.height/2}; }
+function shakeSeat(p){ const el=$('#seat'+p); el.classList.remove('dmg'); void el.offsetWidth; el.classList.add('dmg'); setTimeout(()=>el.classList.remove('dmg'),1000); }
+function banner(txt,color){
+  const b=document.createElement('div'); b.className='banner'; b.textContent=txt;
+  if(color) b.style.color=color;
+  fxLayer.appendChild(b); setTimeout(()=>b.remove(),2400);
+}
+const SUIT_GLYPH=['♣','♦','♥','♠'];
+function fxPlay(lead){
+  const c=lead.combo, victim=(lead.player+1)%4;
+  window.__lv=victim;
+  const tgt=seatCenter(victim), pc=$('#pileCards');
+  if(pc&&pc.children.length) pc.style.transformOrigin=tgt.x+'px '+tgt.y+'px';
+  if(c.dragon) fxDragon(tgt);
+  else if(c.name==='同花順') fxFlush(tgt,suit(lead.cards[0]));
+  else if(c.name==='鐵支') fxBomb(tgt);
+  else if(lead.cards.some(x=>rank(x)===12)) fxDeuce(tgt);
+}
+function fxDragon(tgt){
+  banner('一條龍 · 吞噬','');
+  SFX.dragon();
+  const g=document.createElement('div'); g.className='dgn';
+  let html='<i class="head"><span class="maw"></span></i>'; for(let i=0;i<9;i++) html+='<i></i>';
+  g.innerHTML=html; fxLayer.appendChild(g);
+  const from={x:-120,y:tgt.y}, dx=tgt.x-from.x, dy=tgt.y-from.y, dist=Math.hypot(dx,dy), ang=Math.atan2(dy,dx)*180/Math.PI;
+  g.style.transform=`translate(${from.x}px,${from.y-22}px) rotate(${ang}deg)`;
+  const t0=performance.now(), DUR=950;
+  (function anim(t){
+    const k=Math.min(1,(t-t0)/DUR), e=k<.7?(k/.7)*.94+Math.sin(k*.7*Math.PI)*.06:.94+(k-.7)/.3*.1; // charge w/ slight weave
+    const kk=e*dist, wob=Math.sin(k*Math.PI*6)*10*(1-k);
+    g.style.transform=`translate(${from.x+kk*Math.cos(ang*Math.PI/180)}px,${from.y-22+kk*Math.sin(ang*Math.PI/180)+wob}px) rotate(${ang}deg)`+(k>.75?` scale(${1+(k-.75)*1.6})`:'');
+    if(k<1) requestAnimationFrame(anim);
+    else{ g.classList.add('lunge'); shakeSeat(window.__lv||1); SFX.crush(); setTimeout(()=>g.remove(),400); }
+  })(t0);
+}
+function fxFlush(tgt,s){
+  banner('同花順 · 雪葬','');
+  SFX.flush();
+  const glyph=SUIT_GLYPH[s], red=(s===1||s===2), color=red?'#ff8fa3':'#eaf6ff';
+  for(let i=0;i<70;i++){
+    const el=document.createElement('div'); el.className='flk'; el.textContent=glyph;
+    el.style.left=Math.random()*100+'vw';
+    el.style.fontSize=(14+Math.random()*30)+'px';
+    el.style.color=color;
+    el.style.opacity=.5+Math.random()*.5;
+    el.style.animationDuration=(.9+Math.random()*1.4)+'s';
+    el.style.animationDelay=(Math.random()*.8)+'s';
+    fxLayer.appendChild(el); setTimeout(()=>el.remove(),2600);
+  }
+  setTimeout(()=>shakeSeat(window.__lv||1),1200);
+}
+function fxBomb(tgt){
+  banner('鐵支 · 劍焚','');
+  SFX.bomb();
+  const offs=[[-70,-30],[-24,-8],[24,-8],[70,-30]];
+  offs.forEach((o,i)=>{
+    const sw=document.createElement('div'); sw.className='swd';
+    sw.style.left=(tgt.x+o[0]-6)+'px'; sw.style.top=(tgt.y+o[1]-60)+'px';
+    sw.style.setProperty('--sw','rotate('+(-14+i*9)+'deg)');
+    sw.style.animationDelay=(i*.07)+'s';
+    fxLayer.appendChild(sw); setTimeout(()=>sw.remove(),1200);
+  });
+  for(let i=0;i<10;i++){
+    const fl=document.createElement('div'); fl.className='flm';
+    fl.style.left=(tgt.x-90+Math.random()*180)+'px'; fl.style.top=(tgt.y+40-Math.random()*30)+'px';
+    fl.style.height=(50+Math.random()*80)+'px';
+    fl.style.animationDuration=(.5+Math.random()*.5)+'s';
+    fl.style.animationDelay=(.3+Math.random()*.45)+'s';
+    fxLayer.appendChild(fl); setTimeout(()=>fl.remove(),1600);
+  }
+  setTimeout(()=>shakeSeat(window.__lv||1),380);
+}
+function fxDeuce(tgt){
+  banner('大老二 · 天罰','');
+  SFX.deuce();
+  const flash=document.createElement('div'); flash.className='flashfx';
+  flash.style.setProperty('--fx',(tgt.x/innerWidth*100)+'%');
+  flash.style.setProperty('--fy',(tgt.y/innerHeight*100)+'%');
+  fxLayer.appendChild(flash); setTimeout(()=>flash.remove(),700);
+  const bolt=document.createElement('div'); bolt.className='bolt';
+  bolt.style.left=(tgt.x-13)+'px'; bolt.style.top=(tgt.y-150)+'px'; bolt.style.height='150px';
+  fxLayer.appendChild(bolt); setTimeout(()=>bolt.remove(),800);
+  [[.15,-60],[.2,45]].forEach(([dl,off],i)=>{
+    const b2=document.createElement('div'); b2.className='bolt';
+    b2.style.left=(tgt.x-13+off)+'px'; b2.style.top=(tgt.y-110)+'px'; b2.style.height='110px';
+    b2.style.animationDelay=dl+'s'; b2.style.opacity=.7;
+    fxLayer.appendChild(b2); setTimeout(()=>b2.remove(),900);
+  });
+  const cr=document.createElement('div'); cr.className='crwn'; cr.textContent='👑';
+  cr.style.left=(tgt.x-23)+'px'; cr.style.top=(tgt.y-40)+'px';
+  fxLayer.appendChild(cr); setTimeout(()=>cr.remove(),1300);
+  setTimeout(()=>shakeSeat(window.__lv||1),300);
+}
+
 const NAMES=['你','阿土','小美','老陳'];
 const RANKS=['3','4','5','6','7','8','9','10','J','Q','K','A','2'];
 const SUITS=['♣','♦','♥','♠'].map(s=>s+'︎');
@@ -242,7 +518,7 @@ function analyze(cs){
   if(n===13){
     if(new Set(a.map(rank)).size!==13) return null;
     const fl=a.every(c=>suit(c)===suit(a[0]));
-    return {name:fl?'同花一條龍':'雜花一條龍',size:13,dragon:true,power:9e4+(fl?1:0)};
+    return {name:'一條龍',size:13,dragon:true,suited:fl,power:9e4+(fl?1:0)};
   }
   if(n!==5) return null;
   const rs=a.map(rank), ss=a.map(suit);
@@ -265,10 +541,15 @@ function analyze(cs){
 }
 function canBeat(c,l){
   if(!l) return true;
+  // 一條龍 > 同花順 > 鐵支：這三種牌型可以壓任何牌型
+  if(c.dragon) return !l.dragon || c.power>l.power;
   if(l.dragon) return false;
-  if(c.dragon) return true;
-  if(c.size===l.size) return c.power>l.power;
-  return !!c.bomb&&l.size<5;
+  if(c.bomb&&c.name==='同花順') return l.name!=='一條龍' && (l.name!=='同花順'||c.power>l.power);
+  if(l.bomb&&l.name==='同花順') return false;
+  if(c.bomb) return l.name!=='一條龍' && l.name!=='同花順' && (l.name!=='鐵支'||c.power>l.power);
+  if(l.bomb) return false;
+  // 其餘牌型必須同種牌型（同張數）才比大小
+  return c.size===l.size&&c.power>l.power;
 }
 function allCombos(hand){
   const h=[...hand].sort((a,b)=>a-b), n=h.length, out=[];
@@ -306,6 +587,7 @@ function candidates(p){
       if(sz<5&&cnt[rank(cs[0])]>sz) k+=15;
       if(!late) k+=twos*25;
       if(o.combo.bomb&&S.lead.combo.size<5) k+=late?0:200;
+      else if(o.combo.bomb&&S.lead.combo.size===5&&!S.lead.combo.bomb) k+=late?0:120; // 鐵支/同花順可壓任何五張牌型
     }
     o.cost=k;
   });
@@ -351,6 +633,7 @@ function newRound(){
   S.turn=S.hands.findIndex(h=>h.includes(0));
   sel.clear(); hintList=null; hintIdx=0; chipIdx={};
   $('#result').hidden=true;
+  audio(); sDeal();
   render(); schedule();
 }
 const TURN_MS=20000;
@@ -385,10 +668,12 @@ function doPlay(p,cards){
   S.hands[p]=S.hands[p].filter(c=>!cards.includes(c));
   S.lead={cards:[...cards].sort((a,b)=>a-b),combo:analyze(cards),player:p};
   S.prev=null; S.first=false;
+  const cb=S.lead.combo, special=cb.dragon||cb.name==='同花順'||cb.name==='鐵支'||S.lead.cards.some(x=>rank(x)===12);
+  if(special) fxPlay(S.lead); else sPlay();
   if(!S.hands[p].length){endRound(p);return;}
   advance(p);
 }
-function doPass(p){ S.passed[p]=true; advance(p); }
+function doPass(p){ sPass(); S.passed[p]=true; advance(p); }
 function advance(p){
   const active=[0,1,2,3].filter(i=>!S.passed[i]);
   if(S.lead&&active.length===1){
@@ -409,6 +694,7 @@ function endRound(w){
   });
   notes[w]='收尾：'+S.lead.combo.name+(wd.part?' · '+wd.part:'');
   pts.forEach((v,i)=>scores[i]+=v); saveScores(); S.pts=pts; S.notes=notes;
+  if(S.winner===0) sWin(); else sLose();
   render();
   setTimeout(showResult,700);
 }
@@ -431,7 +717,7 @@ function validate(cs){
   if(!c) return {ok:false,msg:'這組牌型不成立'};
   if(S.first&&!cs.includes(0)) return {ok:false,msg:'第一手必須包含 ♣3'};
   if(S.lead&&!canBeat(c,S.lead.combo)){
-    if(c.size!==S.lead.combo.size&&!c.bomb) return {ok:false,msg:'要出 '+S.lead.combo.size+' 張牌，或用鐵支、同花順壓'};
+    if(c.size!==S.lead.combo.size&&!c.bomb&&!c.dragon) return {ok:false,msg:'要出 '+S.lead.combo.size+' 張牌，或用鐵支、同花順、一條龍壓'};
     return {ok:false,msg:'壓不過 '+NAMES[S.lead.player]+' 的'+S.lead.combo.name};
   }
   if(c.size===1&&topBig(0)&&cs[0]!==Math.max(...S.hands[0])) return {ok:false,msg:'頂大：下家剩一張，單張要出你最大的牌'};
@@ -464,6 +750,19 @@ $('#closeMenu').onclick=()=>{$('#menu').hidden=true;};
 $('#redealBtn').onclick=()=>{$('#menu').hidden=true; newRound();};
 $('#resetBtn').onclick=()=>{scores=[0,0,0,0]; saveScores(); render(); toast('總分已歸零');};
 $('#againBtn').onclick=newRound;
+
+/* audio toggles: start BGM on first user gesture (autoplay policy), remember prefs */
+function syncToggles(){
+  $('#bgmBtn').classList.toggle('off',!bgmOn); $('#bgmBtn').textContent=bgmOn?'🎵':'🔇';
+  $('#sfxBtn').classList.toggle('off',!sfxOn); $('#sfxBtn').textContent=sfxOn?'🔊':'🔕';
+}
+$('#bgmBtn').onclick=()=>{ bgmOn=!bgmOn; try{localStorage.setItem('bigtwo-bgm',bgmOn?'1':'0');}catch(e){} syncToggles(); if(bgmOn) startBGM(); else stopBGM(); };
+$('#sfxBtn').onclick=()=>{ sfxOn=!sfxOn; try{localStorage.setItem('bigtwo-sfx',sfxOn?'1':'0');}catch(e){} syncToggles(); };
+syncToggles();
+let bgmStarted=false;
+function kickBGM(){ if(!bgmStarted&&bgmOn){ bgmStarted=true; startBGM(); } }
+window.addEventListener('pointerdown',kickBGM,{once:true});
+window.addEventListener('keydown',kickBGM,{once:true});
 
 function toast(m){
   const t=$('#toast'); t.textContent=m; t.hidden=false; clearTimeout(toastT); toastT=setTimeout(()=>t.hidden=true,1600);
