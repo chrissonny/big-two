@@ -314,11 +314,11 @@ function audio(){
   return AC;
 }
 function resumeAudio(){ const a=audio(); if(a&&a.state==='suspended') a.resume().catch(()=>{}); }
-['pointerdown','keydown'].forEach(ev=>window.addEventListener(ev,resumeAudio));
+['pointerdown','touchend','click','keydown'].forEach(ev=>window.addEventListener(ev,resumeAudio));
 function tone(f,dur,o){
   o=o||{}; const a=AC; if(!a) return;
   const t0=a.currentTime+(o.when||0);
-  const osc=a.createOscillator(); osc.type=o.type||'sine'; osc.frequency.value=f;
+  const osc=a.createOscillator(); osc.type=o.type||'sine'; osc.frequency.setValueAtTime(f,t0);
   if(o.slideTo) osc.frequency.exponentialRampToValueAtTime(Math.max(20,o.slideTo),t0+dur);
   const g=a.createGain(), vol=o.vol==null?.3:o.vol;
   g.gain.setValueAtTime(0,t0);
@@ -404,25 +404,25 @@ function stopBGM(){
 }
 /* ---------- FX: special play animations ---------- */
 const fxLayer=$('#fx');
-function seatCenter(p){ const r=$('#seat'+p).getBoundingClientRect(); return {x:r.left+r.width/2,y:r.top+r.height/2}; }
-function shakeSeat(p){ const el=$('#seat'+p); el.classList.remove('dmg'); void el.offsetWidth; el.classList.add('dmg'); setTimeout(()=>el.classList.remove('dmg'),1000); }
+// 你（座位 0）沒有 #seat0，用手牌區當作目標
+function seatEl(p){ return p===0?$('#hand'):$('#seat'+p); }
+function seatCenter(p){ const el=seatEl(p); if(!el) return {x:innerWidth/2,y:innerHeight/2}; const r=el.getBoundingClientRect(); return {x:r.left+r.width/2,y:r.top+r.height/2}; }
+function shakeSeat(p){ const el=seatEl(p); if(!el) return; el.classList.remove('dmg'); void el.offsetWidth; el.classList.add('dmg'); setTimeout(()=>el.classList.remove('dmg'),1000); }
 function banner(txt,color){
+  fxLayer.querySelectorAll('.banner').forEach(x=>x.remove());   // 不讓橫幅疊在一起
   const b=document.createElement('div'); b.className='banner'; b.textContent=txt;
   if(color) b.style.color=color;
   fxLayer.appendChild(b); setTimeout(()=>b.remove(),2400);
 }
 const SUIT_GLYPH=['♣','♦','♥','♠'];
 function fxPlay(lead){
-  const c=lead.combo, victim=(lead.player+1)%4;
-  window.__lv=victim;
-  const tgt=seatCenter(victim), pc=$('#pileCards');
-  if(pc&&pc.children.length) pc.style.transformOrigin=tgt.x+'px '+tgt.y+'px';
-  if(c.dragon) fxDragon(tgt);
-  else if(c.name==='同花順') fxFlush(tgt,suit(lead.cards[0]));
-  else if(c.name==='鐵支') fxBomb(tgt);
-  else if(lead.cards.some(x=>rank(x)===12)) fxDeuce(tgt);
+  const c=lead.combo, v=(lead.player+1)%4, tgt=seatCenter(v);
+  if(c.dragon) fxDragon(tgt,v);
+  else if(c.name==='同花順') fxFlush(tgt,suit(lead.cards[0]),v);
+  else if(c.name==='鐵支') fxBomb(tgt,v);
+  else if(lead.cards.some(x=>rank(x)===12)) fxDeuce(tgt,v);
 }
-function fxDragon(tgt){
+function fxDragon(tgt,v){
   banner('一條龍 · 吞噬','');
   SFX.dragon();
   const g=document.createElement('div'); g.className='dgn';
@@ -436,10 +436,10 @@ function fxDragon(tgt){
     const kk=e*dist, wob=Math.sin(k*Math.PI*6)*10*(1-k);
     g.style.transform=`translate(${from.x+kk*Math.cos(ang*Math.PI/180)}px,${from.y-22+kk*Math.sin(ang*Math.PI/180)+wob}px) rotate(${ang}deg)`+(k>.75?` scale(${1+(k-.75)*1.6})`:'');
     if(k<1) requestAnimationFrame(anim);
-    else{ g.classList.add('lunge'); shakeSeat(window.__lv||1); SFX.crush(); setTimeout(()=>g.remove(),400); }
+    else{ g.classList.add('lunge'); shakeSeat(v); SFX.crush(); setTimeout(()=>g.remove(),400); }
   })(t0);
 }
-function fxFlush(tgt,s){
+function fxFlush(tgt,s,v){
   banner('同花順 · 雪葬','');
   SFX.flush();
   const glyph=SUIT_GLYPH[s], red=(s===1||s===2), color=red?'#ff8fa3':'#eaf6ff';
@@ -453,9 +453,9 @@ function fxFlush(tgt,s){
     el.style.animationDelay=(Math.random()*.8)+'s';
     fxLayer.appendChild(el); setTimeout(()=>el.remove(),2600);
   }
-  setTimeout(()=>shakeSeat(window.__lv||1),1200);
+  setTimeout(()=>shakeSeat(v),1200);
 }
-function fxBomb(tgt){
+function fxBomb(tgt,v){
   banner('鐵支 · 劍焚','');
   SFX.bomb();
   const offs=[[-70,-30],[-24,-8],[24,-8],[70,-30]];
@@ -474,9 +474,9 @@ function fxBomb(tgt){
     fl.style.animationDelay=(.3+Math.random()*.45)+'s';
     fxLayer.appendChild(fl); setTimeout(()=>fl.remove(),1600);
   }
-  setTimeout(()=>shakeSeat(window.__lv||1),380);
+  setTimeout(()=>shakeSeat(v),380);
 }
-function fxDeuce(tgt){
+function fxDeuce(tgt,v){
   banner('大老二 · 天罰','');
   SFX.deuce();
   const flash=document.createElement('div'); flash.className='flashfx';
@@ -495,7 +495,7 @@ function fxDeuce(tgt){
   const cr=document.createElement('div'); cr.className='crwn'; cr.textContent='👑';
   cr.style.left=(tgt.x-23)+'px'; cr.style.top=(tgt.y-40)+'px';
   fxLayer.appendChild(cr); setTimeout(()=>cr.remove(),1300);
-  setTimeout(()=>shakeSeat(window.__lv||1),300);
+  setTimeout(()=>shakeSeat(v),300);
 }
 
 const NAMES=['你','阿土','小美','老陳'];
@@ -669,7 +669,8 @@ function doPlay(p,cards){
   S.lead={cards:[...cards].sort((a,b)=>a-b),combo:analyze(cards),player:p};
   S.prev=null; S.first=false;
   const cb=S.lead.combo, special=cb.dragon||cb.name==='同花順'||cb.name==='鐵支'||S.lead.cards.some(x=>rank(x)===12);
-  if(special) fxPlay(S.lead); else sPlay();
+  // 特效出錯也不能卡住遊戲
+  try{ if(special) fxPlay(S.lead); else sPlay(); }catch(e){ console.error(e); }
   if(!S.hands[p].length){endRound(p);return;}
   advance(p);
 }
